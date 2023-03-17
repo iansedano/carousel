@@ -4,7 +4,9 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "rollup -c --watch"
+    "watch:css": "postcss src/style.css -o dist/bundle.css -w",
+    "watch:js": "rollup -c --watch",
+    "watch": "npm-run-all --parallel watch:*"
   },
   "repository": {
     "type": "git",
@@ -21,12 +23,12 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "autoprefixer": "^10.4.14",
     "lodash-es": "^4.17.21",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.4.21",
+    "postcss-cli": "^10.1.0",
     "postcss-import": "^15.1.0",
     "rollup": "^3.19.1",
-    "rollup-plugin-clear": "^2.0.7",
     "rollup-plugin-livereload": "^2.0.5",
-    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-serve": "^2.0.2",
     "tailwindcss": "^3.2.7"
   }
