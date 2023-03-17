@@ -179,10 +179,9 @@ export class InfiniteCarousel extends Carousel {
     this.setupDOM(window);
     this.slideTracker = {
       canonicalIndex: 0,
-      absoluteIndex: this.carousel.childElementCount + 1,
+      absoluteIndex: 0,
       currentSlide: null,
       canonicalCount: this.carousel.childElementCount,
-      // Times 3 because two copies are taken ( see this.duplicateSlides() )
       absoluteCount: this.carousel.childElementCount * 3,
     };
     this.numberSlides("canonical");
@@ -197,13 +196,13 @@ export class InfiniteCarousel extends Carousel {
 
   incrementCounter() {
     this.slideTracker.absoluteIndex++;
-    if (this.slideTracker.absoluteIndex >= this.carousel.childElementCount) {
+    if (this.slideTracker.absoluteIndex >= this.slideTracker.absoluteCount) {
       this.slideTracker.absoluteIndex = 0;
     }
 
-    this.slideTracker.absoluteIndex++;
-    if (this.slideTracker.absoluteIndex >= this.carousel.childElementCount) {
-      this.slideTracker.absoluteIndex = 0;
+    this.slideTracker.canonicalIndex++;
+    if (this.slideTracker.canonicalIndex >= this.slideTracker.canonicalCount) {
+      this.slideTracker.canonicalIndex = 0;
     }
   }
 
@@ -217,23 +216,23 @@ export class InfiniteCarousel extends Carousel {
 
   balanceSlides() {
     const half = Math.floor(this.carousel.childElementCount / 2);
-    let _currentSlideIndex = Array.from(this.carousel.children).findIndex(
-      (element) => element.dataset.slide == this.currentSlideIndex
+    let currentSlideIndex = Array.from(this.carousel.children).findIndex(
+      (element) => element.dataset.slide == this.slideTracker.absoluteIndex
     );
 
     const first = this.carousel.children[0];
-    if (_currentSlideIndex + half + 1 <= this.carousel.childElementCount) {
+    if (currentSlideIndex + half + 1 <= this.carousel.childElementCount) {
       let slice = Array.from(this.carousel.children).slice(
-        _currentSlideIndex + half + 1
+        currentSlideIndex + half + 1
       );
       slice.forEach((child) => {
         child.remove();
         this.carousel.insertBefore(child, first);
       });
-    } else if (_currentSlideIndex - half + 1 >= 0) {
+    } else if (currentSlideIndex - half + 1 >= 0) {
       let slice = Array.from(this.carousel.children).slice(
         0,
-        _currentSlideIndex - half + 1
+        currentSlideIndex - half + 1
       );
       slice.forEach((child) => {
         child.remove();
@@ -243,10 +242,11 @@ export class InfiniteCarousel extends Carousel {
   }
 
   scrollTo(slideNumber) {
+    console.log(this.slideTracker);
     this.window.scrollLeft = this.centers[slideNumber];
 
     this.buttons.forEach((btn) => {
-      if (btn.dataset.slide == this.slideTracker.absoluteIndex) {
+      if (btn.dataset.slide == this.slideTracker.canonicalIndex) {
         this.styleButton(btn, true);
       } else {
         this.styleButton(btn, false);
