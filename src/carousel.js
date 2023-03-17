@@ -1,4 +1,4 @@
-class Carousel {
+export class Carousel {
   /**
    * Construct a carousel with a given element.
    *
@@ -43,6 +43,11 @@ class Carousel {
       this.carousel.append(element);
     });
     this.window.prepend(this.carousel);
+
+    // Create Nav Buttons
+
+    const navContainer = document.createElement("nav");
+    this.carousel.children.length;
   }
 
   /**
@@ -102,7 +107,7 @@ class Carousel {
   }
 }
 
-class InfiniteCarousel extends Carousel {
+export class InfiniteCarousel extends Carousel {
   constructor(window) {
     super();
     this.init(window);
@@ -164,20 +169,3 @@ class InfiniteCarousel extends Carousel {
     }, interval);
   }
 }
-
-function button() {
-  const classList =
-    "rounded-full text-transparent bg-white outline-black outline-[1px] outline w-6 inline-block";
-}
-
-function initCarousels() {
-  document.querySelectorAll(".carousel").forEach((element) => {
-    new Carousel(element).run(1000);
-  });
-
-  document.querySelectorAll(".infinite-carousel").forEach((element) => {
-    new InfiniteCarousel(element).run(1000);
-  });
-}
-
-initCarousels();

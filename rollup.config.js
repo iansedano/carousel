@@ -4,9 +4,9 @@ import autoprefixer from "autoprefixer";
 import postCssImport from "postcss-import";
 
 export default {
-  input: "script.js",
+  input: "src/index.js",
   output: {
-    file: "bundle.js", // Your output file (change as needed)
+    file: "dist/bundle.js", // Your output file (change as needed)
     format: "iife", // Change this as needed
   },
   plugins: [
