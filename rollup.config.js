@@ -17,10 +17,10 @@ export default {
       lodashEs: "_",
     },
   },
-  watch: { include: ["src/**/*", "tailwind.config.js"] },
+  watch: { include: ["src/**/*", "./tailwind.config.cjs"] },
 
   plugins: [
-    clear({ targets: ["dist"] }),
+    clear({ targets: ["dist"], watch: true }),
     resolve(),
     postcss({
       plugins: [postCssImport(), tailwindcss(), autoprefixer()],

@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["**/*.{html,mjs,js}"],
+  // PostCSS doesn't accept glob ** folders
+  content: ["./src/*.{html,mjs,js}", "./index.html"],
   theme: {
     extend: {},
   },
