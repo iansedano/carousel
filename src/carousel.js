@@ -1,3 +1,5 @@
+import { range } from "lodash-es";
+
 export class Carousel {
   /**
    * Construct a carousel with a given element.
@@ -47,7 +49,8 @@ export class Carousel {
     // Create Nav Buttons
 
     const navContainer = document.createElement("nav");
-    this.carousel.children.length;
+    range(this.carousel.childElementCount).forEach((a) => console.log(a));
+    this.carousel.childElementCount;
   }
 
   /**
@@ -87,7 +90,7 @@ export class Carousel {
 
   incrementCounter() {
     this.currentSlide++;
-    if (this.currentSlide >= this.carousel.children.length) {
+    if (this.currentSlide >= this.carousel.childElementCount) {
       this.currentSlide = 0;
     }
   }
@@ -134,13 +137,13 @@ export class InfiniteCarousel extends Carousel {
   }
 
   balanceSlides() {
-    const half = Math.floor(this.carousel.children.length / 2);
+    const half = Math.floor(this.carousel.childElementCount / 2);
     let currentSlideIndex = Array.from(this.carousel.children).findIndex(
       (element) => element.dataset.slide == this.currentSlide
     );
 
     const first = this.carousel.children[0];
-    if (currentSlideIndex + half + 1 <= this.carousel.children.length) {
+    if (currentSlideIndex + half + 1 <= this.carousel.childElementCount) {
       let slice = Array.from(this.carousel.children).slice(
         currentSlideIndex + half + 1
       );
