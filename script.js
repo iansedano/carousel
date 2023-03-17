@@ -1,4 +1,13 @@
 class Carousel {
+  /**
+   * Construct a carousel with a given element.
+   *
+   * Opts out of initializing if no element passed. To allow derived classes to
+   * override initialization.
+   *
+   * @param {Element} window
+   *
+   */
   constructor(window) {
     if (window === undefined) return;
     this.init(window);
@@ -101,14 +110,11 @@ class InfiniteCarousel extends Carousel {
 
   init(window) {
     this.setupDOM(window);
-
     this.currentSlide = 0;
-
     this.duplicateSlides();
     this.numberSlides();
     this.balanceSlides();
     this.updateCenters();
-
     requestAnimationFrame(() => {
       this.scrollTo(this.currentSlide);
     });
