@@ -4,6 +4,7 @@ import autoprefixer from "autoprefixer";
 import postCssImport from "postcss-import";
 import resolve from "@rollup/plugin-node-resolve";
 import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 
 export default {
   input: "src/index.js",
@@ -26,5 +27,6 @@ export default {
       extensions: [".css"],
     }),
     serve("."),
+    livereload(),
   ],
 };
