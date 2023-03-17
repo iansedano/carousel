@@ -17,21 +17,27 @@ export class Carousel {
 
   init(window) {
     this.setupDOM(window);
-    this.numberSlides();
-    this.currentSlide = 0;
+    this.numberSlides("slide");
+    this.currentSlideIndex = 0;
     this.addPadding();
     requestAnimationFrame(() => {
       this.updateCenters();
-      this.scrollTo(this.currentSlide);
+      this.scrollTo(this.currentSlideIndex);
     });
   }
 
   setupDOM(window) {
     this.window = window;
 
-    const windowClasses =
-      "scroll-smooth snap-x transition-all relative overflow-x-hidden";
-    this.window.classList.add(...windowClasses.split(" "));
+    this.window.classList.add(
+      ...[
+        "scroll-smooth",
+        "snap-x",
+        "transition-all",
+        "relative",
+        "!overflow-x-hidden",
+      ]
+    );
 
     this.carousel = document.createElement("div");
 
@@ -49,8 +55,53 @@ export class Carousel {
     // Create Nav Buttons
 
     const navContainer = document.createElement("nav");
-    range(this.carousel.childElementCount).forEach((a) => console.log(a));
-    this.carousel.childElementCount;
+    navContainer.classList.add(...["h-6", "mb-10", "text-center"]);
+    this.buttons = [];
+    range(this.carousel.childElementCount).forEach((i) => {
+      const button = this.createButton(i);
+      navContainer.append(button);
+      this.buttons.push(button);
+    });
+    this.window.after(navContainer);
+
+    const clickHandler = (event) => {
+      console.log(event);
+      const target = event.target.dataset.slide;
+      this.currentSlideIndex = target;
+      this.scrollTo(target);
+    };
+
+    navContainer.addEventListener("click", clickHandler);
+  }
+
+  createButton(idx) {
+    const button = document.createElement("button");
+    button.dataset.slide = idx;
+    button.classList.add(
+      ...[
+        "rounded-full",
+        "text-transparent",
+        "bg-white",
+        "outline-black",
+        "outline-[1px]",
+        "outline",
+        "w-2",
+        "h-2",
+        "mx-1",
+        "inline-block",
+      ]
+    );
+    return button;
+  }
+
+  styleButton(button, active = false) {
+    if (active == false) {
+      button.classList.add(...["bg-white"]);
+      button.classList.remove(...["bg-black"]);
+    } else {
+      button.classList.add(...["bg-black"]);
+      button.classList.remove(...["bg-white"]);
+    }
   }
 
   /**
@@ -69,9 +120,9 @@ export class Carousel {
     );
   }
 
-  numberSlides() {
+  numberSlides(attrib) {
     Array.from(this.carousel.children).forEach(
-      (item, idx) => (item.dataset.slide = idx)
+      (item, idx) => (item.dataset[attrib] = idx)
     );
   }
 
@@ -86,12 +137,20 @@ export class Carousel {
 
   scrollTo(slideNumber) {
     this.window.scrollLeft = this.centers[slideNumber];
+
+    this.buttons.forEach((btn) => {
+      if (btn.dataset.slide == this.currentSlideIndex) {
+        this.styleButton(btn, true);
+      } else {
+        this.styleButton(btn, false);
+      }
+    });
   }
 
   incrementCounter() {
-    this.currentSlide++;
-    if (this.currentSlide >= this.carousel.childElementCount) {
-      this.currentSlide = 0;
+    this.currentSlideIndex++;
+    if (this.currentSlideIndex >= this.carousel.childElementCount) {
+      this.currentSlideIndex = 0;
     }
   }
 
@@ -105,7 +164,7 @@ export class Carousel {
   run(interval) {
     setInterval(() => {
       this.incrementCounter();
-      requestAnimationFrame(() => this.scrollTo(this.currentSlide));
+      requestAnimationFrame(() => this.scrollTo(this.currentSlideIndex));
     }, interval);
   }
 }
@@ -118,14 +177,34 @@ export class InfiniteCarousel extends Carousel {
 
   init(window) {
     this.setupDOM(window);
-    this.currentSlide = 0;
+    this.slideTracker = {
+      canonicalIndex: 0,
+      absoluteIndex: this.carousel.childElementCount + 1,
+      currentSlide: null,
+      canonicalCount: this.carousel.childElementCount,
+      // Times 3 because two copies are taken ( see this.duplicateSlides() )
+      absoluteCount: this.carousel.childElementCount * 3,
+    };
+    this.numberSlides("canonical");
     this.duplicateSlides();
-    this.numberSlides();
+    this.numberSlides("slide");
     this.balanceSlides();
     this.updateCenters();
     requestAnimationFrame(() => {
-      this.scrollTo(this.currentSlide);
+      this.scrollTo(this.slideTracker.absoluteIndex);
     });
+  }
+
+  incrementCounter() {
+    this.slideTracker.absoluteIndex++;
+    if (this.slideTracker.absoluteIndex >= this.carousel.childElementCount) {
+      this.slideTracker.absoluteIndex = 0;
+    }
+
+    this.slideTracker.absoluteIndex++;
+    if (this.slideTracker.absoluteIndex >= this.carousel.childElementCount) {
+      this.slideTracker.absoluteIndex = 0;
+    }
   }
 
   duplicateSlides() {
@@ -138,23 +217,23 @@ export class InfiniteCarousel extends Carousel {
 
   balanceSlides() {
     const half = Math.floor(this.carousel.childElementCount / 2);
-    let currentSlideIndex = Array.from(this.carousel.children).findIndex(
-      (element) => element.dataset.slide == this.currentSlide
+    let _currentSlideIndex = Array.from(this.carousel.children).findIndex(
+      (element) => element.dataset.slide == this.currentSlideIndex
     );
 
     const first = this.carousel.children[0];
-    if (currentSlideIndex + half + 1 <= this.carousel.childElementCount) {
+    if (_currentSlideIndex + half + 1 <= this.carousel.childElementCount) {
       let slice = Array.from(this.carousel.children).slice(
-        currentSlideIndex + half + 1
+        _currentSlideIndex + half + 1
       );
       slice.forEach((child) => {
         child.remove();
         this.carousel.insertBefore(child, first);
       });
-    } else if (currentSlideIndex - half + 1 >= 0) {
+    } else if (_currentSlideIndex - half + 1 >= 0) {
       let slice = Array.from(this.carousel.children).slice(
         0,
-        currentSlideIndex - half + 1
+        _currentSlideIndex - half + 1
       );
       slice.forEach((child) => {
         child.remove();
@@ -163,12 +242,26 @@ export class InfiniteCarousel extends Carousel {
     }
   }
 
+  scrollTo(slideNumber) {
+    this.window.scrollLeft = this.centers[slideNumber];
+
+    this.buttons.forEach((btn) => {
+      if (btn.dataset.slide == this.slideTracker.absoluteIndex) {
+        this.styleButton(btn, true);
+      } else {
+        this.styleButton(btn, false);
+      }
+    });
+  }
+
   run(interval) {
     setInterval(() => {
       this.incrementCounter();
       this.balanceSlides();
       this.updateCenters();
-      requestAnimationFrame(() => this.scrollTo(this.currentSlide));
+      requestAnimationFrame(() =>
+        this.scrollTo(this.slideTracker.absoluteIndex)
+      );
     }, interval);
   }
 }
