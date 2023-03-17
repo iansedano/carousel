@@ -6,12 +6,9 @@ class Carousel {
 
   init(window) {
     this.setupDOM(window);
-
     this.numberSlides();
     this.currentSlide = 0;
-
     this.addPadding();
-
     requestAnimationFrame(() => {
       this.updateCenters();
       this.scrollTo(this.currentSlide);
@@ -39,6 +36,13 @@ class Carousel {
     this.window.prepend(this.carousel);
   }
 
+  /**
+   * Add empty element either side of carousel to allow the elements at the
+   * edges to be centered in the scroll view.
+   *
+   * With Chrome, adding CSS padding or margin only works to add padding to the
+   * left of the scroll view, not seeming to have any effect on the right.
+   */
   addPadding() {
     this.window.prepend(
       Carousel.createSpacerElement(this.window.offsetWidth / 2)
