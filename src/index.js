@@ -1,4 +1,3 @@
-import "./style.css";
 import { Carousel, InfiniteCarousel } from "./carousel";
 
 function button() {
