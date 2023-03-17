@@ -11,6 +11,7 @@ export class Carousel {
    *
    */
   constructor(window) {
+    this.hasNavigated = false;
     if (window === undefined) return;
     this.init(window);
   }
@@ -68,6 +69,7 @@ export class Carousel {
       const target = event.target.dataset.slide;
       this.currentSlideIndex = target;
       this.scrollTo(target);
+      this.hasNavigated = true;
     };
 
     navContainer.addEventListener("click", clickHandler);
@@ -147,6 +149,11 @@ export class Carousel {
   }
 
   incrementCounter() {
+    if (this.hasNavigated == true) {
+      this.hasNavigated = false;
+      return;
+    }
+
     this.currentSlideIndex++;
     if (this.currentSlideIndex >= this.carousel.childElementCount) {
       this.currentSlideIndex = 0;
