@@ -9,6 +9,7 @@ export default {
     file: "dist/bundle.js", // Your output file (change as needed)
     format: "iife", // Change this as needed
   },
+  watch: { include: "src/**" },
   plugins: [
     postcss({
       plugins: [postCssImport(), tailwindcss(), autoprefixer()],
