@@ -65,7 +65,6 @@ export class Carousel {
     this.window.after(navContainer);
 
     const clickHandler = (event) => {
-      console.log(event);
       const target = event.target.dataset.slide;
       this.currentSlideIndex = target;
       this.scrollTo(target);
