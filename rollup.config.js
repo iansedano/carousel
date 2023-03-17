@@ -5,6 +5,7 @@ import postCssImport from "postcss-import";
 import resolve from "@rollup/plugin-node-resolve";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
+import clear from "rollup-plugin-clear";
 
 export default {
   input: "src/index.js",
@@ -16,9 +17,10 @@ export default {
       lodashEs: "_",
     },
   },
-  watch: { include: "src/**" },
+  watch: { include: ["src/**/*", "tailwind.config.js"] },
 
   plugins: [
+    clear({ targets: ["dist"] }),
     resolve(),
     postcss({
       plugins: [postCssImport(), tailwindcss(), autoprefixer()],
@@ -27,6 +29,6 @@ export default {
       extensions: [".css"],
     }),
     serve("."),
-    livereload(),
+    livereload({ delay: 300 }),
   ],
 };
