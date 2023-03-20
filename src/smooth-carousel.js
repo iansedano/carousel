@@ -36,7 +36,6 @@ export class SmoothCarousel extends Carousel {
 
   scrollTo(slideNumber) {
     scrollWindowX(this.window, this.centers[slideNumber], 3000);
-    // this.window.scrollLeft = this.centers[slideNumber];
 
     this.buttons.forEach((btn) => {
       if (btn.dataset.slide == this.currentSlideIndex) {
