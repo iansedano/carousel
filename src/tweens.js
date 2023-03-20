@@ -2,7 +2,7 @@ export function tween(start, end, duration, ease = easeInOutSine) {
   const startTime = Date.now();
   const delta = end - start;
 
-  function getValue() {
+  return () => {
     const elapsed = Date.now() - startTime;
     if (elapsed >= duration) {
       return end;
@@ -10,8 +10,7 @@ export function tween(start, end, duration, ease = easeInOutSine) {
       const fraction = easeInOutSine(elapsed / duration);
       return delta * fraction + start;
     }
-  }
-  return getValue;
+  };
 }
 
 // https://easings.net/
