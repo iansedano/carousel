@@ -1,6 +1,15 @@
 import { tween, easeInOutSine } from "./tweens";
 
-export function scrollWindow(element, target, duration, ease = easeInOutSine) {
+/**
+ *
+ * NOTE - smooth scroll and snapping need to be off
+ *
+ * @param {*} element DOM element with overflow that needs to be scrolled
+ * @param {*} target target x coordinate
+ * @param {*} duration how long the animation should take in seconds
+ * @param {*} ease easing function
+ */
+export function scrollWindowX(element, target, duration, ease = easeInOutSine) {
   const scrollTween = tween(element.scrollLeft, target, duration, ease);
 
   const update = () => {
