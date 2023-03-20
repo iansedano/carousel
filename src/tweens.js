@@ -1,4 +1,4 @@
-function tween(start, end, duration, ease = easeInOutSine) {
+export function tween(start, end, duration, ease = easeInOutSine) {
   const startTime = Date.now();
   const delta = end - start;
 
@@ -21,6 +21,6 @@ function tween(start, end, duration, ease = easeInOutSine) {
  * @param {*} x progress of animation between 0 and 1
  * @returns value between 0 and 1
  */
-function easeInOutSine(x) {
+export function easeInOutSine(x) {
   return -(Math.cos(Math.PI * x) - 1) / 2;
 }
