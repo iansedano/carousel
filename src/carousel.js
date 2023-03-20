@@ -18,6 +18,12 @@ export class Carousel {
 
   init(window) {
     this.setupDOM(window);
+    this.createNavButtons((event) => {
+      const target = event.target.dataset.slide;
+      this.currentSlideIndex = target;
+      this.scrollTo(target);
+      this.hasNavigated = true;
+    });
     this.numberSlides("slide");
     this.currentSlideIndex = 0;
     this.addPadding();
@@ -31,14 +37,9 @@ export class Carousel {
     this.window = window;
 
     this.window.classList.add(
-      ...[
-        "scroll-smooth",
-        "snap-x",
-        "transition-all",
-        "relative",
-        "!overflow-x-hidden",
-      ]
+      ...["scroll-smooth", "snap-x", "relative", "!overflow-x-hidden"]
     );
+    // this.window.style.transitionDuration = "300ms";
 
     this.carousel = document.createElement("div");
 
@@ -52,9 +53,9 @@ export class Carousel {
       this.carousel.append(element);
     });
     this.window.prepend(this.carousel);
+  }
 
-    // Create Nav Buttons
-
+  createNavButtons(clickHandler) {
     const navContainer = document.createElement("nav");
     navContainer.classList.add(...["h-6", "mb-10", "text-center"]);
     this.buttons = [];
@@ -64,13 +65,6 @@ export class Carousel {
       this.buttons.push(button);
     });
     this.window.after(navContainer);
-
-    const clickHandler = (event) => {
-      const target = event.target.dataset.slide;
-      this.currentSlideIndex = target;
-      this.scrollTo(target);
-      this.hasNavigated = true;
-    };
 
     navContainer.addEventListener("click", clickHandler);
   }
@@ -190,6 +184,11 @@ export class InfiniteCarousel extends Carousel {
       canonicalCount: this.carousel.childElementCount,
       absoluteCount: this.carousel.childElementCount * 3,
     };
+    this.createNavButtons((event) => {
+      const target = event.target.dataset.slide;
+      this.scrollToNearestCanonical(target);
+      this.hasNavigated = true;
+    });
     this.numberSlides("canonical");
     this.duplicateSlides();
     this.numberSlides("slide");
@@ -201,6 +200,11 @@ export class InfiniteCarousel extends Carousel {
   }
 
   incrementCounter() {
+    if (this.hasNavigated == true) {
+      this.hasNavigated = false;
+      return;
+    }
+
     this.slideTracker.absoluteIndex++;
     if (this.slideTracker.absoluteIndex >= this.slideTracker.absoluteCount) {
       this.slideTracker.absoluteIndex = 0;
@@ -247,9 +251,17 @@ export class InfiniteCarousel extends Carousel {
     }
   }
 
-  scrollTo(slideNumber) {
-    console.log(this.slideTracker);
-    this.window.scrollLeft = this.centers[slideNumber];
+  scrollToNearestCanonical(canonicalIndex) {
+    const diff = canonicalIndex - this.slideTracker.canonicalIndex;
+    const newAbsoluteIndex = this.slideTracker.absoluteIndex + diff;
+
+    this.slideTracker.canonicalIndex = canonicalIndex;
+    this.slideTracker.absoluteIndex = newAbsoluteIndex;
+    this.scrollTo(newAbsoluteIndex);
+  }
+
+  scrollTo(absoluteIndex) {
+    this.window.scrollLeft = this.centers[absoluteIndex];
 
     this.buttons.forEach((btn) => {
       if (btn.dataset.slide == this.slideTracker.canonicalIndex) {
