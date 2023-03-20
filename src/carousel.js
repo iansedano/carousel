@@ -61,12 +61,11 @@ export class Carousel {
     this.buttons = [];
     range(this.carousel.childElementCount).forEach((i) => {
       const button = this.createButton(i);
+      button.addEventListener("click", clickHandler);
       navContainer.append(button);
       this.buttons.push(button);
     });
     this.window.after(navContainer);
-
-    navContainer.addEventListener("click", clickHandler);
   }
 
   createButton(idx) {
