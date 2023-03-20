@@ -12,12 +12,17 @@ export class Carousel {
    */
   constructor(window) {
     this.hasNavigated = false;
-    if (window === undefined) return;
-    this.init(window);
+    this.window = window;
   }
 
-  init(window) {
-    this.setupDOM(window);
+  static fromContainer(element) {
+    const carousel = new Carousel(element);
+    carousel.init();
+    return carousel;
+  }
+
+  init() {
+    this.setupDOM();
     this.createNavButtons((event) => {
       const target = event.target.dataset.slide;
       this.currentSlideIndex = target;
@@ -33,13 +38,10 @@ export class Carousel {
     });
   }
 
-  setupDOM(window) {
-    this.window = window;
-
+  setupDOM() {
     this.window.classList.add(
       ...["scroll-smooth", "snap-x", "relative", "!overflow-x-hidden"]
     );
-    // this.window.style.transitionDuration = "300ms";
 
     this.carousel = document.createElement("div");
 
@@ -106,12 +108,8 @@ export class Carousel {
    * left of the scroll view, not seeming to have any effect on the right.
    */
   addPadding() {
-    this.window.prepend(
-      Carousel.createSpacerElement(this.window.offsetWidth / 2)
-    );
-    this.window.append(
-      Carousel.createSpacerElement(this.window.offsetWidth / 2)
-    );
+    this.window.prepend(this.createSpacerElement(this.window.offsetWidth / 2));
+    this.window.append(this.createSpacerElement(this.window.offsetWidth / 2));
   }
 
   numberSlides(attrib) {
@@ -153,7 +151,7 @@ export class Carousel {
     }
   }
 
-  static createSpacerElement(width) {
+  createSpacerElement(width) {
     const elem = document.createElement("div");
     elem.style.width = `${width}px`;
     elem.style.flexShrink = 0;

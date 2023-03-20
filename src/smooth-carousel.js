@@ -15,13 +15,15 @@ export class SmoothCarousel extends Carousel {
     super(window);
   }
 
-  setupDOM(window) {
-    this.window = window;
+  static fromContainer(element) {
+    const carousel = new SmoothCarousel(element);
+    carousel.init();
+    return carousel;
+  }
 
+  setupDOM() {
     this.window.classList.add(...["relative", "!overflow-x-hidden"]);
-
     this.carousel = document.createElement("div");
-
     const carouselClasses = "flex flex-row w-min-fit mx-auto";
     this.carousel.classList.add(...carouselClasses.split(" "));
     const slideClasses = ["flex-shrink-0"];

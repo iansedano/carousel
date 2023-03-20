@@ -4,15 +4,15 @@ import { SmoothCarousel } from "./smooth-carousel";
 
 function initCarousels() {
   document.querySelectorAll(".carousel").forEach((element) => {
-    new Carousel(element).run(5000);
+    Carousel.fromContainer(element).run(5000);
   });
 
   document.querySelectorAll(".infinite-carousel").forEach((element) => {
-    new InfiniteCarousel(element).run(5000);
+    InfiniteCarousel.fromContainer(element).run(5000);
   });
 
   document.querySelectorAll(".smooth-carousel").forEach((element) => {
-    new SmoothCarousel(element).run(5000);
+    SmoothCarousel.fromContainer(element).run(5000);
   });
 }
 

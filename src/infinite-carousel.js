@@ -2,12 +2,17 @@ import { Carousel } from "./carousel";
 
 export class InfiniteCarousel extends Carousel {
   constructor(window) {
-    super();
-    this.init(window);
+    super(window);
   }
 
-  init(window) {
-    this.setupDOM(window);
+  static fromContainer(element) {
+    const carousel = new InfiniteCarousel(element);
+    carousel.init();
+    return carousel;
+  }
+
+  init() {
+    this.setupDOM();
     this.slideTracker = {
       canonicalIndex: 0,
       absoluteIndex: 0,
