@@ -15,12 +15,6 @@ export class SmoothCarousel extends Carousel {
     super(window);
   }
 
-  static fromContainer(element) {
-    const carousel = new SmoothCarousel(element);
-    carousel.init();
-    return carousel;
-  }
-
   setupDOM() {
     this.window.classList.add(...["relative", "!overflow-x-hidden"]);
     this.carousel = document.createElement("div");

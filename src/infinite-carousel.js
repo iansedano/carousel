@@ -5,12 +5,6 @@ export class InfiniteCarousel extends Carousel {
     super(window);
   }
 
-  static fromContainer(element) {
-    const carousel = new InfiniteCarousel(element);
-    carousel.init();
-    return carousel;
-  }
-
   init() {
     this.setupDOM();
     this.slideTracker = {

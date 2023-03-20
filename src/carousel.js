@@ -16,7 +16,7 @@ export class Carousel {
   }
 
   static fromContainer(element) {
-    const carousel = new Carousel(element);
+    const carousel = new this(element);
     carousel.init();
     return carousel;
   }
