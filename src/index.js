@@ -2,6 +2,7 @@ import { Carousel } from "./scroll-carousel/carousel";
 import { InfiniteCarousel } from "./scroll-carousel/infinite-carousel";
 import { SmoothCarousel } from "./scroll-carousel/smooth-carousel";
 import { InfiniteSmoothCarousel } from "./scroll-carousel/infinite-smooth-carousel";
+import { main as transitionCarousel } from "./scroll-carousel/transition-carousel";
 
 function initCarousels() {
   document.querySelectorAll(".carousel").forEach((element) => {
@@ -17,7 +18,7 @@ function initCarousels() {
     InfiniteSmoothCarousel.fromContainer(element).run(5000);
   });
   document.querySelectorAll(".transition-carousel").forEach((element) => {
-    InfiniteSmoothCarousel.fromContainer(element).run(5000);
+    transitionCarousel(element);
   });
 }
 
