@@ -1,4 +1,4 @@
-import { tween, easeInOutSine } from "./tweens";
+import { tween, easeInOutSine } from "../tweens";
 
 /**
  *

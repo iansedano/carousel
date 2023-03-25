@@ -10,3 +10,14 @@
   overflow-y: hidden;
   padding-bottom: 50px;
 }
+
+.hero-border-gradient {
+  background: conic-gradient(
+    rgb(13.63, 172.13, 29.48) 1.69%,
+    rgb(249, 204, 61) 20.25%,
+    rgb(244, 230, 96) 36.69%,
+    rgb(250.19, 182.28, 63.31) 50.17%,
+    rgb(251, 176, 59) 66.55%,
+    rgb(13.63, 172.13, 29.48) 95.69%
+  );
+}
