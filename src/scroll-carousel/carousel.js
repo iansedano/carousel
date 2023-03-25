@@ -41,7 +41,7 @@ export class Carousel {
 
   setupDOM() {
     this.window.classList.add(
-      ...["scroll-smooth", "relative", "!overflow-x-hidden"]
+      ...["scroll-smooth", "snap-x", "relative", "!overflow-x-hidden"]
     );
 
     this.carousel = document.createElement("div");
