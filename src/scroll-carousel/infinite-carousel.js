@@ -1,4 +1,5 @@
 import { Carousel } from "./carousel";
+import { runAfterFramePaint } from "../on-paint";
 
 export class InfiniteCarousel extends Carousel {
   constructor(window, options) {

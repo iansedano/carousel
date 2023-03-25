@@ -8,7 +8,9 @@ export default {
     file: "dist/bundle.js", // Your output file (change as needed)
     format: "iife", // Change this as needed
   },
-  watch: { include: ["src/*", "./tailwind.config.cjs"] },
+  watch: {
+    include: ["src/*", "src/scroll-carousel/*", "./tailwind.config.cjs"],
+  },
 
   plugins: [resolve(), serve("."), livereload({ delay: 300 })],
 };
