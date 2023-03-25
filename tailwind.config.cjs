@@ -4,7 +4,9 @@ module.exports = {
   content: [
     "./src/*.{html,mjs,js,css}",
     "./src/scroll-carousel/*.{html,mjs,js,css}",
+    "./src/translate-carousel/*.{html,mjs,js,css}",
     "./*.html",
+    "./demos/*.html",
   ],
   theme: {
     extend: {},

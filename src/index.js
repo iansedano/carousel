@@ -16,6 +16,9 @@ function initCarousels() {
   document.querySelectorAll(".infinite-smooth-carousel").forEach((element) => {
     InfiniteSmoothCarousel.fromContainer(element).run(5000);
   });
+  document.querySelectorAll(".transition-carousel").forEach((element) => {
+    InfiniteSmoothCarousel.fromContainer(element).run(5000);
+  });
 }
 
 initCarousels();

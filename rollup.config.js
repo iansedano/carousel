@@ -9,7 +9,12 @@ export default {
     format: "iife", // Change this as needed
   },
   watch: {
-    include: ["src/*", "src/scroll-carousel/*", "./tailwind.config.cjs"],
+    include: [
+      "src/*",
+      "src/scroll-carousel/*",
+      "src/transition-carousel/*",
+      "./tailwind.config.cjs",
+    ],
   },
 
   plugins: [resolve(), serve("."), livereload({ delay: 300 })],

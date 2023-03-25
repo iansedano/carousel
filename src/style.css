@@ -3,7 +3,11 @@
 @tailwind utilities;
 
 
-.carousel, .infinite-carousel, .smooth-carousel, .infinite-smooth-carousel {
+.carousel,
+.infinite-carousel,
+.smooth-carousel,
+.infinite-smooth-carousel,
+.transition-carousel {
   display: flex;
   flex-direction: row;
   overflow-x: scroll;
