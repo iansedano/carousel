@@ -10,13 +10,14 @@ export class Carousel {
    * @param {Element} window
    *
    */
-  constructor(window) {
+  constructor(window, options) {
     this.hasNavigated = false;
     this.window = window;
+    this.options = options ? options : {};
   }
 
-  static fromContainer(element) {
-    const carousel = new this(element);
+  static fromContainer(element, options) {
+    const carousel = new this(element, options);
     carousel.init();
     return carousel;
   }
@@ -40,7 +41,7 @@ export class Carousel {
 
   setupDOM() {
     this.window.classList.add(
-      ...["scroll-smooth", "snap-x", "relative", "!overflow-x-hidden"]
+      ...["scroll-smooth", "relative", "!overflow-x-hidden"]
     );
 
     this.carousel = document.createElement("div");
@@ -74,29 +75,28 @@ export class Carousel {
     const button = document.createElement("button");
     button.dataset.slide = idx;
     button.classList.add(
-      ...[
-        "rounded-full",
-        "text-transparent",
-        "bg-white",
-        "outline-black",
-        "outline-[1px]",
-        "outline",
-        "w-2",
-        "h-2",
-        "mx-1",
-        "inline-block",
-      ]
+      "rounded-full",
+      "text-transparent",
+      "opacity-30",
+      "w-2",
+      "h-2",
+      "mx-1",
+      "inline-block",
+      "p-0"
     );
+    if (this.options?.buttons == "white") {
+      button.classList.add("bg-white");
+    } else {
+      button.classList.add("bg-black");
+    }
     return button;
   }
 
   styleButton(button, active = false) {
     if (active == false) {
-      button.classList.add(...["bg-white"]);
-      button.classList.remove(...["bg-black"]);
+      button.classList.add("opacity-30");
     } else {
-      button.classList.add(...["bg-black"]);
-      button.classList.remove(...["bg-white"]);
+      button.classList.remove("opacity-30");
     }
   }
 
@@ -122,7 +122,10 @@ export class Carousel {
     this.centers = Array.from(this.carousel.children).reduce((acc, element) => {
       const centerOfElement = element.offsetLeft + element.offsetWidth / 2;
       const windowOffset = this.window.offsetWidth / 2;
-      acc[element.dataset.slide] = centerOfElement - windowOffset;
+      acc[element.dataset.slide] =
+        centerOfElement -
+        windowOffset +
+        ("offset" in this.options ? this.options.offset : 0);
       return acc;
     }, {});
   }

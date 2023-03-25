@@ -1,8 +1,8 @@
 import { Carousel } from "./carousel";
 
 export class InfiniteCarousel extends Carousel {
-  constructor(window) {
-    super(window);
+  constructor(window, options) {
+    super(window, options);
   }
 
   init() {
