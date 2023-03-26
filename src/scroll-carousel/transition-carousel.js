@@ -34,7 +34,12 @@ class Carousel {
       element.cloneNode(true)
     );
     slides.forEach((slide) => {
-      slide.classList.add(/*"snap-center",*/ "flex-shrink-0", "transition-all");
+      slide.classList.add(
+        "flex-shrink-0",
+        "transition-all",
+        "duration-500",
+        "ease-out"
+      );
     });
     carousel.append(...slides);
     return carousel;
@@ -109,15 +114,16 @@ function sleep(ms) {
 }
 
 export async function main(element) {
+  const delay = 3000;
   const newCarouselDOM = Carousel.generateInitialStructure(element);
   element.parentNode.replaceChild(newCarouselDOM, element);
   const carousel = Carousel.fromContainer(newCarouselDOM).initializeState();
   await carousel.firstDOMUpdate(newCarouselDOM);
-  await sleep(1000);
+  await sleep(3000);
   let state = carousel;
   while (true) {
     state = state.tickState();
     await state.updateDOM(newCarouselDOM);
-    await sleep(1000);
+    await sleep(3000);
   }
 }
