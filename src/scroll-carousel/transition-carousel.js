@@ -1,104 +1,127 @@
-export function main(element) {
-  const newCarouselDOM = generateInitialStructure(element);
-  element.parentNode.replaceChild(newCarouselDOM, element);
-  const carouselStartState = getStateFromContainer(newCarouselDOM);
-  const initializedState = initializeState(carouselStartState);
-  console.log(initializedState);
-}
+import { zip } from "lodash-es";
 
-function validateDOMStructure(element) {
-  if (element.children.length === 0) {
-    throw new Error("Carousel must have at least one slide");
+class Carousel {
+  constructor(carouselView, slides) {
+    this.carouselView = carouselView;
+    this.slides = slides;
+  }
+
+  static fromContainer(container) {
+    return new Carousel(
+      {
+        width: container.offsetWidth,
+        height: container.offsetHeight,
+      },
+      Array.from(container.children).map((element) => {
+        return {
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+          position: element.offsetLeft,
+        };
+      })
+    );
+  }
+
+  static generateInitialStructure(container) {
+    const carousel = document.createElement(container.tagName);
+
+    carousel.classList.add(
+      ...container.classList,
+      "relative",
+      "!overflow-x-hidden"
+    );
+    const slides = Array.from(container.children).map((element) =>
+      element.cloneNode(true)
+    );
+    slides.forEach((slide) => {
+      slide.classList.add(/*"snap-center",*/ "flex-shrink-0", "transition-all");
+    });
+    carousel.append(...slides);
+    return carousel;
+  }
+
+  initializeState() {
+    return new Carousel(
+      { ...this.carouselView },
+      this.slides.reduce((acc, slide, idx) => {
+        if (idx === 0) {
+          acc.push({
+            ...slide,
+            position: this.carouselView.width / 2 - slide.width / 2,
+          });
+          return acc;
+        }
+        acc.push({
+          ...slide,
+          position: acc[idx - 1].position + acc[idx - 1].width,
+        });
+        return acc;
+      }, [])
+    );
+  }
+
+  tickState() {
+    // debugger;
+    const idxAtCenter = this.slides.findIndex((slide) => {
+      return slide.position + slide.width / 2 == this.carouselView.width / 2;
+    });
+
+    if (idxAtCenter == this.slides.length - 1) {
+      return this.initializeState();
+    }
+
+    const width =
+      this.slides[idxAtCenter + 1].position +
+      this.slides[idxAtCenter + 1].width / 2 -
+      this.carouselView.width / 2;
+
+    console.log({ idxAtCenter, width });
+
+    return new Carousel(
+      { ...this.carouselView },
+      this.slides.map((slide) => {
+        return {
+          ...slide,
+          position: slide.position - width,
+        };
+      })
+    );
+  }
+
+  async firstDOMUpdate(container) {
+    container.style.width = `${this.carouselView.width}px`;
+    container.style.height = `${this.carouselView.height}px`;
+    zip(container.children, this.slides).forEach(([child, slideState]) => {
+      child.classList.add("absolute");
+      child.style.left = `${slideState.position}px`;
+      child.style.transitionDelay = `2s`;
+      child.style.transform = `translate(-${slideState.width}px)`;
+    });
+
+    await sleep(2000);
+    return this;
+  }
+
+  async updateDOM(container) {
+    zip(container.children, this.slides).forEach(([child, slideState]) => {
+      child.style.left = `${slideState.position}px`;
+      child.style.transitionDelay = `2s`;
+      child.style.transform = `translate(-${slideState.width}px)`;
+    });
+    await sleep(2000);
+    return this;
   }
 }
 
-function generateInitialStructure(container) {
-  const carousel = document.createElement(container.tagName);
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  carousel.classList.add(
-    ...container.classList,
-    "relative",
-    "overflow-x-hidden"
-  );
-  const slides = Array.from(container.children).map((element) =>
-    element.cloneNode(true)
-  );
-  slides.forEach((slide) => {
-    slide.classList.add("snap-center", "flex-shrink-0", "transition-all");
+export function main(element) {
+  const newCarouselDOM = Carousel.generateInitialStructure(element);
+  element.parentNode.replaceChild(newCarouselDOM, element);
+  const carousel = Carousel.fromContainer(newCarouselDOM).initializeState();
+  carousel.firstDOMUpdate(newCarouselDOM).then((state) => {
+    return state.tickState().updateDOM(newCarouselDOM);
   });
-  carousel.append(...slides);
-  return carousel;
-}
-
-/**
- * @param {HTMLElement} container
- */
-function getStateFromContainer(container) {
-  return {
-    carouselView: {
-      width: container.offsetWidth,
-      height: container.offsetHeight,
-      classList: Array.from(container.classList),
-      tagName: container.tagName,
-    },
-    slides: Array.from(container.children).map((element) => {
-      return {
-        width: element.offsetWidth,
-        height: element.offsetHeight,
-        position: element.offsetLeft,
-        classList: Array.from(element.classList),
-        tagName: element.tagName,
-      };
-    }),
-  };
-}
-
-function setFirstSlideToCenter(state) {
-  const { carouselView, slides } = state;
-  const firstSlide = slides[0];
-  const firstSlideCenter = firstSlide.position + firstSlide.width / 2;
-  const carouselCenter = carouselView.width / 2;
-  const offset = carouselCenter - firstSlideCenter;
-  slides.forEach((slide) => {
-    slide.position += offset;
-  });
-  return {
-    carouselView,
-    slides,
-  };
-}
-
-function initializeState(state) {
-  return {
-    carouselView: { ...state.carouselView },
-    slides: state.slides.reduce((acc, slide, idx) => {
-      if (idx === 0) {
-        acc.push({
-          ...slide,
-          position: state.carouselView.width / 2 - slide.width / 2,
-        });
-        return acc;
-      }
-      acc.push({
-        ...slide,
-        position: acc[idx - 1].position + acc[idx - 1].width,
-      });
-      return acc;
-    }, []),
-  };
-}
-
-function generateDOMFromState(state) {
-  const carousel = document.createElement(state.carouselView.tagName);
-  carousel.classList.add(...state.carouselView.classList);
-  const slides = state.slides.map((slide) => {
-    const element = document.createElement("div");
-    element.classList.add("snap-center", "flex-shrink-0", "transition-all");
-    element.style.width = `${slide.width}px`;
-    element.style.height = `${slide.height}px`;
-    element.style.left = `${slide.position}px`;
-    return element;
-  });
-  carousel.append(...slides);
-  return carousel;
 }
