@@ -61,7 +61,6 @@ class Carousel {
   }
 
   tickState() {
-    // debugger;
     const idxAtCenter = this.slides.findIndex((slide) => {
       return slide.position + slide.width / 2 == this.carouselView.width / 2;
     });
@@ -74,8 +73,6 @@ class Carousel {
       this.slides[idxAtCenter + 1].position +
       this.slides[idxAtCenter + 1].width / 2 -
       this.carouselView.width / 2;
-
-    console.log({ idxAtCenter, width });
 
     return new Carousel(
       { ...this.carouselView },
@@ -94,21 +91,21 @@ class Carousel {
     zip(container.children, this.slides).forEach(([child, slideState]) => {
       child.classList.add("absolute");
       child.style.left = `${slideState.position}px`;
-      child.style.transitionDelay = `2s`;
+      child.style.transitionDelay = `1s`;
       child.style.transform = `translate(-${slideState.width}px)`;
     });
 
-    await sleep(2000);
+    await sleep(1100);
     return this;
   }
 
   async updateDOM(container) {
     zip(container.children, this.slides).forEach(([child, slideState]) => {
       child.style.left = `${slideState.position}px`;
-      child.style.transitionDelay = `2s`;
+      child.style.transitionDelay = `1s`;
       child.style.transform = `translate(-${slideState.width}px)`;
     });
-    await sleep(2000);
+    await sleep(1100);
     return this;
   }
 }
@@ -117,11 +114,14 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function main(element) {
+export async function main(element) {
   const newCarouselDOM = Carousel.generateInitialStructure(element);
   element.parentNode.replaceChild(newCarouselDOM, element);
   const carousel = Carousel.fromContainer(newCarouselDOM).initializeState();
-  carousel.firstDOMUpdate(newCarouselDOM).then((state) => {
-    return state.tickState().updateDOM(newCarouselDOM);
-  });
+  await carousel.firstDOMUpdate(newCarouselDOM);
+  let state = carousel;
+  while (true) {
+    state = state.tickState();
+    await state.updateDOM(newCarouselDOM);
+  }
 }
