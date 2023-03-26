@@ -91,21 +91,15 @@ class Carousel {
     zip(container.children, this.slides).forEach(([child, slideState]) => {
       child.classList.add("absolute");
       child.style.left = `${slideState.position}px`;
-      child.style.transitionDelay = `1s`;
-      child.style.transform = `translate(-${slideState.width}px)`;
     });
 
-    await sleep(1100);
     return this;
   }
 
   async updateDOM(container) {
     zip(container.children, this.slides).forEach(([child, slideState]) => {
       child.style.left = `${slideState.position}px`;
-      child.style.transitionDelay = `1s`;
-      child.style.transform = `translate(-${slideState.width}px)`;
     });
-    await sleep(1100);
     return this;
   }
 }
@@ -119,9 +113,11 @@ export async function main(element) {
   element.parentNode.replaceChild(newCarouselDOM, element);
   const carousel = Carousel.fromContainer(newCarouselDOM).initializeState();
   await carousel.firstDOMUpdate(newCarouselDOM);
+  await sleep(1000);
   let state = carousel;
   while (true) {
     state = state.tickState();
     await state.updateDOM(newCarouselDOM);
+    await sleep(1000);
   }
 }
