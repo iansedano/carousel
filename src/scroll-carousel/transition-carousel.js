@@ -1,9 +1,12 @@
 import { zip } from "lodash-es";
 
+const TRANSITION_DURATION = 500;
+
 class Carousel {
-  constructor(carouselView, slides) {
+  constructor(carouselView, slides, idx = null) {
     this.carouselView = carouselView;
     this.slides = slides;
+    this.idx = idx;
   }
 
   static fromContainer(container) {
@@ -15,7 +18,6 @@ class Carousel {
       Array.from(container.children).map((element) => {
         return {
           width: element.offsetWidth,
-          height: element.offsetHeight,
           position: element.offsetLeft,
         };
       })
@@ -40,6 +42,7 @@ class Carousel {
         "duration-500",
         "ease-out"
       );
+      slide.style.transitionDuration = `${TRANSITION_DURATION}ms`;
     });
     carousel.append(...slides);
     return carousel;
@@ -61,22 +64,59 @@ class Carousel {
           position: acc[idx - 1].position + acc[idx - 1].width,
         });
         return acc;
-      }, [])
+      }, []),
+      0
     );
   }
 
-  tickState() {
-    const idxAtCenter = this.slides.findIndex((slide) => {
-      return slide.position + slide.width / 2 == this.carouselView.width / 2;
+  createNavigation(container) {
+    const navContainer = document.createElement("nav");
+    navContainer.classList.add(
+      "flex",
+      "flex-row",
+      "justify-center",
+      "h-6",
+      "mb-10",
+      "text-center"
+    );
+    this.slides.forEach(() => {
+      const button = this.createButton();
+      navContainer.append(button);
     });
+    container.after(navContainer);
+    return navContainer;
+  }
 
-    if (idxAtCenter == this.slides.length - 1) {
+  createButton() {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "24");
+    svg.setAttribute("height", "24");
+    svg.setAttribute("role", "button");
+    svg.classList.add("transition-all");
+    svg.style.transitionDuration = `${TRANSITION_DURATION}ms`;
+
+    const circle = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "circle"
+    );
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", "12");
+    circle.setAttribute("r", "10");
+
+    svg.appendChild(circle);
+
+    return svg;
+  }
+
+  tickState() {
+    if (this.idx == this.slides.length - 1) {
       return this.initializeState();
     }
 
     const width =
-      this.slides[idxAtCenter + 1].position +
-      this.slides[idxAtCenter + 1].width / 2 -
+      this.slides[this.idx + 1].position +
+      this.slides[this.idx + 1].width / 2 -
       this.carouselView.width / 2;
 
     return new Carousel(
@@ -86,25 +126,37 @@ class Carousel {
           ...slide,
           position: slide.position - width,
         };
-      })
+      }),
+      this.idx + 1
     );
   }
 
-  async firstDOMUpdate(container) {
+  async firstDOMUpdate(container, navContainer) {
     container.style.width = `${this.carouselView.width}px`;
     container.style.height = `${this.carouselView.height}px`;
-    zip(container.children, this.slides).forEach(([child, slideState]) => {
-      child.classList.add("absolute");
-      child.style.left = `${slideState.position}px`;
-    });
+    zip(this.slides, container.children, navContainer.children).forEach(
+      ([slideState, child, navButton], i) => {
+        child.classList.add("absolute");
+        child.style.left = `${slideState.position}px`;
+        if (this.idx != i) navButton.classList.add("opacity-50");
+      }
+    );
 
     return this;
   }
 
-  async updateDOM(container) {
-    zip(container.children, this.slides).forEach(([child, slideState]) => {
-      child.style.left = `${slideState.position}px`;
-    });
+  async updateDOM(container, navContainer) {
+    zip(this.slides, container.children, navContainer.children).forEach(
+      ([slideState, child, navButton], i) => {
+        child.style.left = `${slideState.position}px`;
+        if (this.idx == i) {
+          navButton.classList.remove("opacity-50");
+        } else {
+          navButton.classList.add("opacity-50");
+        }
+      }
+    );
+    await sleep(TRANSITION_DURATION);
     return this;
   }
 }
@@ -114,16 +166,18 @@ function sleep(ms) {
 }
 
 export async function main(element) {
-  const delay = 3000;
-  const newCarouselDOM = Carousel.generateInitialStructure(element);
-  element.parentNode.replaceChild(newCarouselDOM, element);
-  const carousel = Carousel.fromContainer(newCarouselDOM).initializeState();
-  await carousel.firstDOMUpdate(newCarouselDOM);
-  await sleep(3000);
-  let state = carousel;
+  const delay = 1000;
+  const carousel = Carousel.generateInitialStructure(element);
+
+  element.parentNode.replaceChild(carousel, element);
+  const initState = Carousel.fromContainer(carousel).initializeState();
+  const nav = initState.createNavigation(carousel);
+  await initState.firstDOMUpdate(carousel, nav);
+  await sleep(delay);
+  let state = initState;
   while (true) {
     state = state.tickState();
-    await state.updateDOM(newCarouselDOM);
-    await sleep(3000);
+    await state.updateDOM(carousel, nav);
+    await sleep(delay);
   }
 }
