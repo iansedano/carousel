@@ -1,7 +1,7 @@
 import { zip } from "lodash-es";
 
 const TRANSITION_DURATION = 500;
-const DELAY = 1000;
+const DELAY = 5000;
 
 type Dims = {
   width: number;
@@ -126,7 +126,10 @@ class CarouselContainer {
     );
   }
 
-  createNavigation(tracker: CarouselTracker) {
+  createNavigation(
+    tracker: CarouselTracker,
+    continueCallback: (arg0: boolean) => void
+  ) {
     this.navContainer = document.createElement("nav");
     this.navContainer.classList.add(
       "flex",
@@ -138,9 +141,11 @@ class CarouselContainer {
     );
     tracker.currentState.slides.forEach((_, idx) => {
       const button = this.createButton();
-      button.addEventListener("click", (event) => {
+      button.addEventListener("click", async (event) => {
         clearTimeout(tracker.timeoutId);
-        tracker.currentState.setState(idx);
+        tracker.currentState = tracker.currentState.setState(idx);
+        await this.updateDOM(tracker.currentState);
+        continueCallback(true);
       });
       this.navContainer.append(button);
     });
@@ -227,13 +232,15 @@ export async function main(element: HTMLElement) {
   const initState = carouselContainer.getState().initializeState();
 
   const tracker: CarouselTracker = { currentState: initState, timeoutId: 0 };
-  const tick = async () => {
-    tracker.currentState = tracker.currentState.tickState();
-    await carouselContainer.updateDOM(tracker.currentState);
+  const tick = async (noTick = false) => {
+    if (noTick == false) {
+      tracker.currentState = tracker.currentState.tickState();
+      await carouselContainer.updateDOM(tracker.currentState);
+    }
     tracker.timeoutId = window.setTimeout(() => tick(), DELAY);
   };
 
-  carouselContainer.createNavigation(tracker);
+  carouselContainer.createNavigation(tracker, tick);
   await carouselContainer.firstDOMUpdate(tracker.currentState);
   await sleep(DELAY);
 
