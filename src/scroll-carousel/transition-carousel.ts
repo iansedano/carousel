@@ -1,80 +1,43 @@
 import { zip } from "lodash-es";
 
 const TRANSITION_DURATION = 500;
+const DELAY = 1000;
 
-type _Carousel = {
-  carouselView: CarouselView;
-  slides: Slide[];
-};
-
-type CarouselView = {
+type Dims = {
   width: number;
   height: number;
 };
 
-type Slide = {
+type SlideDims = {
   width: number;
   position: number;
 };
 
-class Carousel {
-  carouselView: CarouselView;
-  slides: Slide[];
+type CarouselTracker = {
+  currentState: CarouselState;
+  timeoutId: number;
+};
+
+class CarouselState {
+  carouselDims: Dims;
+  slides: SlideDims[];
   idx: number;
   previousOffset: number;
 
-  constructor(carouselView: CarouselView, slides: Slide[], idx: number) {
-    this.carouselView = carouselView;
+  constructor(carouselDims: Dims, slides: SlideDims[], idx: number) {
+    this.carouselDims = carouselDims;
     this.slides = slides;
     this.idx = idx;
   }
 
-  static fromContainer(container: HTMLElement) {
-    return new Carousel(
-      {
-        width: container.offsetWidth,
-        height: container.offsetHeight,
-      },
-      Array.from(container.children).map((element) => {
-        const htmlElement = element as HTMLElement;
-        return {
-          width: htmlElement.offsetWidth,
-          position: htmlElement.offsetLeft,
-        };
-      }),
-      0
-    );
-  }
-
-  static generateInitialStructure(container: HTMLElement) {
-    const carousel = document.createElement(container.tagName);
-
-    carousel.classList.add(
-      ...container.classList,
-      "relative",
-      "!overflow-x-hidden"
-    );
-    const slides = Array.from(container.children).map((element) => {
-      const htmlElement = element as HTMLElement;
-      return htmlElement.cloneNode(true);
-    });
-    slides.forEach((slide) => {
-      const slideElement = slide as HTMLElement;
-      slideElement.classList.add("flex-shrink-0", "transition-all", "ease-out");
-      slideElement.style.transitionDuration = `${TRANSITION_DURATION}ms`;
-    });
-    carousel.append(...slides);
-    return carousel;
-  }
-
   initializeState() {
-    return new Carousel(
-      { ...this.carouselView },
-      this.slides.reduce((acc: Slide[], slide, idx) => {
+    return new CarouselState(
+      { ...this.carouselDims },
+      this.slides.reduce((acc: SlideDims[], slide, idx) => {
         if (idx === 0) {
           acc.push({
             ...slide,
-            position: this.carouselView.width / 2 - slide.width / 2,
+            position: this.carouselDims.width / 2 - slide.width / 2,
           });
           return acc;
         }
@@ -88,9 +51,84 @@ class Carousel {
     );
   }
 
-  createNavigation(container: HTMLElement) {
-    const navContainer = document.createElement("nav");
-    navContainer.classList.add(
+  tickState() {
+    if (this.idx == this.slides.length - 1) {
+      return this.setState(0);
+    }
+
+    return this.setState(this.idx + 1);
+  }
+
+  setState(targetIdx: number) {
+    const targetPosition =
+      this.carouselDims.width / 2 - this.slides[targetIdx].width / 2;
+
+    const diff = targetPosition - this.slides[targetIdx].position;
+
+    return new CarouselState(
+      { ...this.carouselDims },
+      this.slides.map((slide) => {
+        return {
+          width: slide.width,
+          position: slide.position + diff,
+        };
+      }),
+      targetIdx
+    );
+  }
+}
+
+class CarouselContainer {
+  container: HTMLElement;
+  navContainer: HTMLElement;
+
+  constructor(container: HTMLElement) {
+    this.container = container;
+    this.generateInitialStructure();
+  }
+
+  generateInitialStructure() {
+    const carousel = document.createElement(this.container.tagName);
+
+    carousel.classList.add(
+      ...this.container.classList,
+      "relative",
+      "!overflow-x-hidden"
+    );
+    const slides = Array.from(this.container.children).map((element) => {
+      const htmlElement = element as HTMLElement;
+      return htmlElement.cloneNode(true);
+    });
+    slides.forEach((slide) => {
+      const slideElement = slide as HTMLElement;
+      slideElement.classList.add("flex-shrink-0", "transition-all", "ease-out");
+      slideElement.style.transitionDuration = `${TRANSITION_DURATION}ms`;
+    });
+    carousel.append(...slides);
+    this.container.replaceWith(carousel);
+    this.container = carousel;
+  }
+
+  getState() {
+    return new CarouselState(
+      {
+        width: this.container.offsetWidth,
+        height: this.container.offsetHeight,
+      },
+      Array.from(this.container.children).map((element) => {
+        const htmlElement = element as HTMLElement;
+        return {
+          width: htmlElement.offsetWidth,
+          position: htmlElement.offsetLeft,
+        };
+      }),
+      0
+    );
+  }
+
+  createNavigation(tracker: CarouselTracker) {
+    this.navContainer = document.createElement("nav");
+    this.navContainer.classList.add(
       "flex",
       "flex-row",
       "justify-center",
@@ -98,12 +136,15 @@ class Carousel {
       "mb-10",
       "text-center"
     );
-    this.slides.forEach(() => {
+    tracker.currentState.slides.forEach((_, idx) => {
       const button = this.createButton();
-      navContainer.append(button);
+      button.addEventListener("click", (event) => {
+        clearTimeout(tracker.timeoutId);
+        tracker.currentState.setState(idx);
+      });
+      this.navContainer.append(button);
     });
-    container.after(navContainer);
-    return navContainer;
+    this.container.after(this.navContainer);
   }
 
   createButton() {
@@ -128,57 +169,50 @@ class Carousel {
     return svg;
   }
 
-  tickState() {
-    if (this.idx == this.slides.length - 1) {
-      return this.setState(0);
-    }
+  async firstDOMUpdate(state: CarouselState) {
+    this.container.style.width = `${state.carouselDims.width}px`;
+    this.container.style.height = `${state.carouselDims.height}px`;
+    zip(
+      state.slides,
+      this.container.children,
+      this.navContainer.children
+    ).forEach(([slideState, child, navButton], i: number) => {
+      if (
+        child == undefined ||
+        slideState == undefined ||
+        navButton == undefined
+      )
+        return;
+      const childElement = child as HTMLElement;
 
-    return this.setState(this.idx + 1);
-  }
-
-  setState(targetIdx: number) {
-    const targetPosition =
-      this.carouselView.width / 2 - this.slides[targetIdx].width / 2;
-
-    const diff = targetPosition - this.slides[targetIdx].position;
-
-    return new Carousel(
-      { ...this.carouselView },
-      this.slides.map((slide) => {
-        return {
-          width: slide.width,
-          position: slide.position + diff,
-        };
-      }),
-      targetIdx
-    );
-  }
-
-  async firstDOMUpdate(container: HTMLElement, navContainer: HTMLElement) {
-    container.style.width = `${this.carouselView.width}px`;
-    container.style.height = `${this.carouselView.height}px`;
-    zip(this.slides, container.children, navContainer.children).forEach(
-      ([slideState, child, navButton], i: number) => {
-        child.classList.add("absolute");
-        child.style.left = `${slideState.position}px`;
-        if (this.idx != i) navButton.classList.add("opacity-50");
-      }
-    );
+      childElement.classList.add("absolute");
+      childElement.style.left = `${slideState.position}px`;
+      if (state.idx != i) navButton.classList.add("opacity-50");
+    });
 
     return this;
   }
 
-  async updateDOM(container: HTMLElement, navContainer: HTMLElement) {
-    zip(this.slides, container.children, navContainer.children).forEach(
-      ([slideState, child, navButton], i: number) => {
-        child.style.left = `${slideState.position}px`;
-        if (this.idx == i) {
-          navButton.classList.remove("opacity-50");
-        } else {
-          navButton.classList.add("opacity-50");
-        }
+  async updateDOM(state: CarouselState) {
+    zip(
+      state.slides,
+      this.container.children,
+      this.navContainer.children
+    ).forEach(([slideState, child, navButton], i: number) => {
+      if (
+        slideState == undefined ||
+        child == undefined ||
+        navButton == undefined
+      )
+        return;
+      const childElement = child as HTMLElement;
+      childElement.style.left = `${slideState.position}px`;
+      if (state.idx == i) {
+        navButton.classList.remove("opacity-50");
+      } else {
+        navButton.classList.add("opacity-50");
       }
-    );
+    });
     await sleep(TRANSITION_DURATION);
     return this;
   }
@@ -189,22 +223,19 @@ function sleep(ms: number) {
 }
 
 export async function main(element: HTMLElement) {
-  const delay = 1000;
-  const carousel = Carousel.generateInitialStructure(element);
-  if (element.parentNode == null) throw new Error("No parent node found");
-  element.parentNode.replaceChild(carousel, element);
-  const initState = Carousel.fromContainer(carousel).initializeState();
-  const nav = initState.createNavigation(carousel);
-  await initState.firstDOMUpdate(carousel, nav);
-  await sleep(delay);
-  let state = initState;
-  let timeoutId: number;
+  const carouselContainer = new CarouselContainer(element);
+  const initState = carouselContainer.getState().initializeState();
 
-  const tick = async (state: Carousel) => {
-    state = state.tickState();
-    await state.updateDOM(carousel, nav);
-    timeoutId = window.setTimeout(() => tick(state), delay);
-    console.log(timeoutId);
+  const tracker: CarouselTracker = { currentState: initState, timeoutId: 0 };
+  const tick = async () => {
+    tracker.currentState = tracker.currentState.tickState();
+    await carouselContainer.updateDOM(tracker.currentState);
+    tracker.timeoutId = window.setTimeout(() => tick(), DELAY);
   };
-  tick(state);
+
+  carouselContainer.createNavigation(tracker);
+  await carouselContainer.firstDOMUpdate(tracker.currentState);
+  await sleep(DELAY);
+
+  tick();
 }
