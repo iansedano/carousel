@@ -137,25 +137,20 @@ class Carousel {
   }
 
   setState(targetIdx: number) {
-    const targetPosition = this.getCenteredPosition(targetIdx);
+    const targetPosition =
+      this.carouselView.width / 2 - this.slides[targetIdx].width / 2;
+
+    const diff = targetPosition - this.slides[targetIdx].position;
 
     return new Carousel(
       { ...this.carouselView },
       this.slides.map((slide) => {
         return {
-          ...slide,
-          position: slide.position - targetPosition,
+          width: slide.width,
+          position: slide.position + diff,
         };
       }),
       targetIdx
-    );
-  }
-
-  getCenteredPosition(slideIdx: number) {
-    return (
-      this.slides[slideIdx].position +
-      this.carouselView.width / 2 -
-      this.slides[slideIdx].width / 2
     );
   }
 
@@ -195,7 +190,6 @@ function sleep(ms: number) {
 
 export async function main(element: HTMLElement) {
   const delay = 1000;
-  debugger;
   const carousel = Carousel.generateInitialStructure(element);
   if (element.parentNode == null) throw new Error("No parent node found");
   element.parentNode.replaceChild(carousel, element);
@@ -206,11 +200,11 @@ export async function main(element: HTMLElement) {
   let state = initState;
   let timeoutId: number;
 
-  const tick = async () => {
+  const tick = async (state: Carousel) => {
     state = state.tickState();
     await state.updateDOM(carousel, nav);
-    timeoutId = window.setTimeout(tick, delay);
+    timeoutId = window.setTimeout(() => tick(state), delay);
     console.log(timeoutId);
   };
-  tick();
+  tick(state);
 }
