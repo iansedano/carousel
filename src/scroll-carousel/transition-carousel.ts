@@ -2,29 +2,49 @@ import { zip } from "lodash-es";
 
 const TRANSITION_DURATION = 500;
 
+type _Carousel = {
+  carouselView: CarouselView;
+  slides: Slide[];
+};
+
+type CarouselView = {
+  width: number;
+  height: number;
+};
+
+type Slide = {
+  width: number;
+  position: number;
+};
+
 class Carousel {
-  constructor(carouselView, slides, idx = null) {
+  carouselView: CarouselView;
+  slides: Slide[];
+  idx: number;
+
+  constructor(carouselView: CarouselView, slides: Slide[], idx: number = 0) {
     this.carouselView = carouselView;
     this.slides = slides;
     this.idx = idx;
   }
 
-  static fromContainer(container) {
+  static fromContainer(container: HTMLElement) {
     return new Carousel(
       {
         width: container.offsetWidth,
         height: container.offsetHeight,
       },
       Array.from(container.children).map((element) => {
+        const htmlElement = element as HTMLElement;
         return {
-          width: element.offsetWidth,
-          position: element.offsetLeft,
+          width: htmlElement.offsetWidth,
+          position: htmlElement.offsetLeft,
         };
       })
     );
   }
 
-  static generateInitialStructure(container) {
+  static generateInitialStructure(container: HTMLElement) {
     const carousel = document.createElement(container.tagName);
 
     carousel.classList.add(
@@ -32,17 +52,19 @@ class Carousel {
       "relative",
       "!overflow-x-hidden"
     );
-    const slides = Array.from(container.children).map((element) =>
-      element.cloneNode(true)
-    );
+    const slides = Array.from(container.children).map((element) => {
+      const htmlElement = element as HTMLElement;
+      return htmlElement.cloneNode(true);
+    });
     slides.forEach((slide) => {
-      slide.classList.add(
+      const slideElement = slide as HTMLElement;
+      slideElement.classList.add(
         "flex-shrink-0",
         "transition-all",
         "duration-500",
         "ease-out"
       );
-      slide.style.transitionDuration = `${TRANSITION_DURATION}ms`;
+      slideElement.style.transitionDuration = `${TRANSITION_DURATION}ms`;
     });
     carousel.append(...slides);
     return carousel;
@@ -51,7 +73,7 @@ class Carousel {
   initializeState() {
     return new Carousel(
       { ...this.carouselView },
-      this.slides.reduce((acc, slide, idx) => {
+      this.slides.reduce((acc: Slide[], slide, idx) => {
         if (idx === 0) {
           acc.push({
             ...slide,
@@ -69,7 +91,7 @@ class Carousel {
     );
   }
 
-  createNavigation(container) {
+  createNavigation(container: HTMLElement) {
     const navContainer = document.createElement("nav");
     navContainer.classList.add(
       "flex",
@@ -131,11 +153,11 @@ class Carousel {
     );
   }
 
-  async firstDOMUpdate(container, navContainer) {
+  async firstDOMUpdate(container: HTMLElement, navContainer: HTMLElement) {
     container.style.width = `${this.carouselView.width}px`;
     container.style.height = `${this.carouselView.height}px`;
     zip(this.slides, container.children, navContainer.children).forEach(
-      ([slideState, child, navButton], i) => {
+      ([slideState, child, navButton], i: number) => {
         child.classList.add("absolute");
         child.style.left = `${slideState.position}px`;
         if (this.idx != i) navButton.classList.add("opacity-50");
@@ -145,9 +167,9 @@ class Carousel {
     return this;
   }
 
-  async updateDOM(container, navContainer) {
+  async updateDOM(container: HTMLElement, navContainer: HTMLElement) {
     zip(this.slides, container.children, navContainer.children).forEach(
-      ([slideState, child, navButton], i) => {
+      ([slideState, child, navButton], i: number) => {
         child.style.left = `${slideState.position}px`;
         if (this.idx == i) {
           navButton.classList.remove("opacity-50");
@@ -161,14 +183,14 @@ class Carousel {
   }
 }
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function main(element) {
+export async function main(element: HTMLElement) {
   const delay = 1000;
   const carousel = Carousel.generateInitialStructure(element);
-
+  if (element.parentNode == null) throw new Error("No parent node found");
   element.parentNode.replaceChild(carousel, element);
   const initState = Carousel.fromContainer(carousel).initializeState();
   const nav = initState.createNavigation(carousel);
