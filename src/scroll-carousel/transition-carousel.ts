@@ -21,8 +21,9 @@ class Carousel {
   carouselView: CarouselView;
   slides: Slide[];
   idx: number;
+  previousOffset: number;
 
-  constructor(carouselView: CarouselView, slides: Slide[], idx: number = 0) {
+  constructor(carouselView: CarouselView, slides: Slide[], idx: number) {
     this.carouselView = carouselView;
     this.slides = slides;
     this.idx = idx;
@@ -40,7 +41,8 @@ class Carousel {
           width: htmlElement.offsetWidth,
           position: htmlElement.offsetLeft,
         };
-      })
+      }),
+      0
     );
   }
 
@@ -58,12 +60,7 @@ class Carousel {
     });
     slides.forEach((slide) => {
       const slideElement = slide as HTMLElement;
-      slideElement.classList.add(
-        "flex-shrink-0",
-        "transition-all",
-        "duration-500",
-        "ease-out"
-      );
+      slideElement.classList.add("flex-shrink-0", "transition-all", "ease-out");
       slideElement.style.transitionDuration = `${TRANSITION_DURATION}ms`;
     });
     carousel.append(...slides);
@@ -133,23 +130,32 @@ class Carousel {
 
   tickState() {
     if (this.idx == this.slides.length - 1) {
-      return this.initializeState();
+      return this.setState(0);
     }
 
-    const width =
-      this.slides[this.idx + 1].position +
-      this.slides[this.idx + 1].width / 2 -
-      this.carouselView.width / 2;
+    return this.setState(this.idx + 1);
+  }
+
+  setState(targetIdx: number) {
+    const targetPosition = this.getCenteredPosition(targetIdx);
 
     return new Carousel(
       { ...this.carouselView },
       this.slides.map((slide) => {
         return {
           ...slide,
-          position: slide.position - width,
+          position: slide.position - targetPosition,
         };
       }),
-      this.idx + 1
+      targetIdx
+    );
+  }
+
+  getCenteredPosition(slideIdx: number) {
+    return (
+      this.slides[slideIdx].position +
+      this.carouselView.width / 2 -
+      this.slides[slideIdx].width / 2
     );
   }
 
@@ -189,6 +195,7 @@ function sleep(ms: number) {
 
 export async function main(element: HTMLElement) {
   const delay = 1000;
+  debugger;
   const carousel = Carousel.generateInitialStructure(element);
   if (element.parentNode == null) throw new Error("No parent node found");
   element.parentNode.replaceChild(carousel, element);
@@ -197,9 +204,13 @@ export async function main(element: HTMLElement) {
   await initState.firstDOMUpdate(carousel, nav);
   await sleep(delay);
   let state = initState;
-  while (true) {
+  let timeoutId: number;
+
+  const tick = async () => {
     state = state.tickState();
     await state.updateDOM(carousel, nav);
-    await sleep(delay);
-  }
+    timeoutId = window.setTimeout(tick, delay);
+    console.log(timeoutId);
+  };
+  tick();
 }
