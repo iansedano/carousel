@@ -1,6 +1,9 @@
 import resolve from "@rollup/plugin-node-resolve";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
+import { babel } from "@rollup/plugin-babel";
+
+const extensions = [".js", ".ts"];
 
 export default {
   input: "src/index.js",
@@ -17,5 +20,10 @@ export default {
     ],
   },
 
-  plugins: [resolve(), serve("."), livereload({ delay: 300 })],
+  plugins: [
+    resolve({ extensions }),
+    babel({ extensions, babelHelpers: "bundled" }),
+    serve("."),
+    livereload({ delay: 300 }),
+  ],
 };
