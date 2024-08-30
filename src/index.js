@@ -1,8 +1,8 @@
-import { Carousel } from "./scroll-carousel/carousel";
-import { InfiniteCarousel } from "./scroll-carousel/infinite-carousel";
-import { SmoothCarousel } from "./scroll-carousel/smooth-carousel";
-import { InfiniteSmoothCarousel } from "./scroll-carousel/infinite-smooth-carousel";
-import { main as transitionCarousel } from "./scroll-carousel/transition-carousel";
+import { Carousel } from "carousel/carousel";
+import { InfiniteCarousel } from "carousel/infinite-carousel";
+import { SmoothCarousel } from "carousel/smooth-carousel";
+import { InfiniteSmoothCarousel } from "carousel/infinite-smooth-carousel";
+import { main as transitionCarousel } from "carousel/transition-carousel";
 
 function initCarousels() {
   document.querySelectorAll(".carousel").forEach((element) => {

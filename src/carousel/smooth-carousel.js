@@ -1,7 +1,16 @@
-import { InfiniteCarousel } from "./infinite-carousel";
-import { scrollWindowX } from "./scroll";
+import { scrollWindowX } from "animation/scroll";
+import { Carousel } from "carousel/carousel";
 
-export class InfiniteSmoothCarousel extends InfiniteCarousel {
+export class SmoothCarousel extends Carousel {
+  /**
+   * Construct a carousel with a given element.
+   *
+   * Opts out of initializing if no element passed. To allow derived classes to
+   * override initialization.
+   *
+   * @param {Element} window
+   *
+   */
   constructor(window) {
     super(window);
   }
@@ -21,11 +30,11 @@ export class InfiniteSmoothCarousel extends InfiniteCarousel {
     this.window.prepend(this.carousel);
   }
 
-  scrollTo(absoluteIndex) {
-    scrollWindowX(this.window, this.centers[absoluteIndex], 3000);
+  scrollTo(slideNumber) {
+    scrollWindowX(this.window, this.centers[slideNumber], 3000);
 
     this.buttons.forEach((btn) => {
-      if (btn.dataset.slide == this.slideTracker.canonicalIndex) {
+      if (btn.dataset.slide == this.currentSlideIndex) {
         this.styleButton(btn, true);
       } else {
         this.styleButton(btn, false);
