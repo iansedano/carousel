@@ -1,8 +1,8 @@
-import { runAfterFramePaintAsync } from "animation/after-paint";
-import { EventQueue } from "animation/event-queue";
-import { sleep } from "animation/sleep";
-import { Alignment, PlatformCarouselState } from "carousel/carousel-state";
-import { Circle } from "components/Circle";
+import { runAfterFramePaintAsync } from "../animation/after-paint";
+import { EventQueue } from "../animation/event-queue";
+import { sleep } from "../animation/sleep";
+import { Alignment, PlatformCarouselState } from "./carousel-state";
+import { Circle } from "../components/Circle";
 import { debounce } from "lodash-es";
 
 type CarouselTracker = {

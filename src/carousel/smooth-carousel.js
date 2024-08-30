@@ -1,5 +1,5 @@
-import { scrollWindowX } from "animation/scroll";
-import { Carousel } from "carousel/carousel";
+import { scrollWindowX } from "../animation/scroll";
+import { Carousel } from "./carousel";
 
 export class SmoothCarousel extends Carousel {
   /**

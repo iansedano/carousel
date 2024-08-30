@@ -1,5 +1,5 @@
-import { scrollWindowX } from "animation/scroll";
-import { InfiniteCarousel } from "carousel/infinite-carousel";
+import { scrollWindowX } from "../animation/scroll";
+import { InfiniteCarousel } from "./infinite-carousel";
 
 export class InfiniteSmoothCarousel extends InfiniteCarousel {
   constructor(window) {

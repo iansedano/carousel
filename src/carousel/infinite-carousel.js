@@ -1,4 +1,4 @@
-import { Carousel } from "carousel/carousel";
+import { Carousel } from "./carousel";
 
 export class InfiniteCarousel extends Carousel {
   constructor(window, options) {

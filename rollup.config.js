@@ -19,7 +19,6 @@ export default {
       "./tailwind.config.cjs",
     ],
   },
-
   plugins: [
     resolve({ extensions }),
     babel({ extensions, babelHelpers: "bundled" }),
